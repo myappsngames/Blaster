@@ -29,6 +29,53 @@ void ABlasterCharacter::BeginPlay()
 	
 }
 
+// Called to bind functionality to input
+void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	// Bind Characters inherited Jump Function directly
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+
+	// Bind Movement functions to inputs
+	PlayerInputComponent->BindAxis("MoveForward", this, &ABlasterCharacter::MoveForward); // this: this character; the user object
+	PlayerInputComponent->BindAxis("MoveRight", this, &ABlasterCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("Turn", this, &ABlasterCharacter::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &ABlasterCharacter::LookUp);
+}
+
+void ABlasterCharacter::MoveForward(float Value)
+{
+	if (Controller != nullptr && Value != 0.f)
+	{
+		// declare local variable named YawRotation
+		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f); // 0 for pitch and roll; parallel to the ground
+		// Create FRotationMatrix from FRotator, and Call GetUnitAxis to return an FVector
+		const FVector Direction(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X)); // FVector represents direction of Yaw rotation
+		AddMovementInput(Direction, Value);
+	}
+}
+
+void ABlasterCharacter::MoveRight(float Value)
+{
+	const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
+	// Get Y Axis from Yaw Rotation Matrix
+	const FVector Direction(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y)); 
+	AddMovementInput(Direction, Value);
+}
+
+void ABlasterCharacter::Turn(float Value)
+{
+	// Add Yaw to Controller Rotation
+	AddControllerYawInput(Value); // Value represents how fast mouse is being moved left and right
+}
+
+void ABlasterCharacter::LookUp(float Value)
+{
+	AddControllerPitchInput(Value);
+}
+
+
 // Called every frame
 void ABlasterCharacter::Tick(float DeltaTime)
 {
@@ -36,10 +83,5 @@ void ABlasterCharacter::Tick(float DeltaTime)
 
 }
 
-// Called to bind functionality to input
-void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-}
 
